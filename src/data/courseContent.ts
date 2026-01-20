@@ -125,88 +125,47 @@ DATA: lt_kna1 TYPE HASHED TABLE OF kna1
                 },
                 {
                     id: 4,
-                    title: "S4: Sintaxis y Programación Orientada a Eventos",
+                    title: "S4: Sintaxis y Eventos",
                     content: `
 ### Sintaxis ABAP Básica
-ABAP no distingue entre mayúsculas y minúsculas (excepto en literales de texto). Cada sentencia debe terminar en un punto (\`.\`).
+ABAP no distingue entre mayúsculas y minúsculas (excepto literales).
 
-**Encadenamiento de Sentencias (Chain Statements)**:
-Se usa el dos puntos (\`:\`) para agrupar comandos que comparten el inicio.
-\`\`\`abap
-WRITE: 'Hola', 'Mundo', 'SAP'.
-\`\`\`
-
-**Convenciones de Nomenclatura Recomendadas**:
-- \`lv_...\`: Variable local.
-- \`gv_...\`: Variable global.
-- \`lt_...\`: Tabla interna local.
-- \`ls_...\`: Estructura (Line) local.
-
-### Programación Orientada a Eventos (Reporting)
-A diferencia de otros lenguajes lineales, los reportes ABAP se ejecutan según el ciclo de vida del entorno SAP, activando eventos específicos:
-
-1.  **LOAD-OF-PROGRAM**: Se activa al cargar el programa en memoria.
-2.  **INITIALIZATION**: Momento ideal para setear valores por defecto en la pantalla de selección.
-3.  **AT SELECTION-SCREEN**: Validación de los datos ingresados por el usuario. Aquí se disparan los mensajes de error.
-4.  **START-OF-SELECTION**: El evento principal. Aquí reside la lógica de negocio (consultas a base de datos).
-5.  **END-OF-SELECTION**: Se ejecuta después de la lógica principal. Ideal para mostrar resultados o llamar al ALV.
+**Eventos de un Reporte**:
+1.  **INITIALIZATION**: Seteo de valores iniciales.
+2.  **AT SELECTION-SCREEN**: Validación de pantalla.
+3.  **START-OF-SELECTION**: Lógica central (Selects).
+4.  **END-OF-SELECTION**: Finalización/ALV.
             `,
                     examples: [
                         {
                             language: "abap",
                             code: `
-REPORT z_ejemplo_eventos.
-
-*--------------------------------------------------------------------*
-* DECLARACIÓN DE DATOS
-*--------------------------------------------------------------------*
-TABLES: mara.
-
-SELECT-OPTIONS: s_matnr FOR mara-matnr. " Pantalla de selección
-PARAMETERS: p_check AS CHECKBOX DEFAULT 'X'.
-
-DATA: lt_materiales TYPE TABLE OF mara,
-      ls_material   TYPE mara.
-
-*--------------------------------------------------------------------*
-* EVENTOS
-*--------------------------------------------------------------------*
-
+REPORT z_ejemplo.
 INITIALIZATION.
-  " Este código corre ANTES de que el usuario vea la pantalla
-  APPEND VALUE #( sign = 'I' option = 'BT' low = '1' high = '100' ) TO s_matnr.
-
-AT SELECTION-SCREEN.
-  " Validación de campos
-  IF s_matnr[] IS INITIAL AND p_check = 'X'.
-    MESSAGE 'Favor de ingresar al menos un material' TYPE 'E'.
-  ENDIF.
-
+  WRITE 'Inicio'.
 START-OF-SELECTION.
-  " Lógica principal: Lectura de base de datos
-  SELECT * FROM mara 
-    INTO TABLE lt_materiales
-    WHERE matnr IN s_matnr.
-
-END-OF-SELECTION.
-  " Visualización de resultados
-  IF lt_materiales IS NOT INITIAL.
-    LOOP AT lt_materiales INTO ls_material.
-      WRITE: / ls_material-matnr, ls_material-matart.
-    ENDLOOP.
-  ELSE.
-    WRITE: 'No se encontraron resultados.'.
-  ENDIF.
-                            `
+  WRITE 'Ejecución'.
+                    `
                         }
                     ],
-                    exercises: [
-                        "Crear un reporte que use INITIALIZATION para poner la fecha de hoy en un parámetro.",
-                        "En AT SELECTION-SCREEN, validar que un campo de usuario no esté vacío.",
-                        "Implementar START-OF-SELECTION para realizar una suma y END-OF-SELECTION para mostrarla."
-                    ]
+                    exercises: []
+                },
+                {
+                    id: 5,
+                    title: "W1: Taller Semanal - Mi Primera Tabla y Reporte",
+                    content: `
+### Objetivo
+Integrar DDIC y Sintaxis en un mini-proyecto.
+
+### Tareas
+1. **SE11**: Crear tabla \`ZESTUDIANTES\` con ID, Nombre y Fecha Ingreso.
+2. **SE38**: Crear reporte que lea la tabla y valide que el ID no sea cero en \`AT SELECTION-SCREEN\`.
+3. **Eventos**: Usar \`INITIALIZATION\` para sugerir la fecha de hoy.
+          `,
+                    examples: [],
+                    exercises: []
                 }
-            ] // Fin sesiones semana 1
+            ]
         },
         {
             id: 2,
@@ -217,34 +176,52 @@ END-OF-SELECTION.
                     id: 6,
                     title: "S6: Open SQL Avanzado",
                     content: `
-### SELECT
-La sentencia para leer base de datos.
-**Reglas de Oro del Performance:**
-1.  **SIEMPRE** filtrar por Clave Primaria o Indices si es posible.
-2.  **NUNCA** hacer SELECT dentro de un LOOP. (N+1 Problem).
-3.  Seleccionar solo los campos necesarios (Evitar \`SELECT *\`).
-
-### FOR ALL ENTRIES
-Para unir datos en memoria cuando un JOIN es muy complejo o lento. Equivale a un \`WHERE IN (...)\` masivo.
+### SELECT & Performance
+**Reglas de Oro:**
+1. Filtrar por Clave/Índices.
+2. NUNCA SELECT dentro de un LOOP.
+3. Usar \`FOR ALL ENTRIES\` para combinar tablas.
           `,
                     examples: [
                         {
                             language: "abap",
                             code: `
-* Mala práctica (Select inside Loop)
-LOOP AT lt_pedidos INTO ls_pedido.
-  SELECT SINGLE * FROM kna1 INTO ls_kna1 
-    WHERE kunnr = ls_pedido-kunnr. "MALO!!
-ENDLOOP.
-
-* Buena práctica (For All Entries)
-IF lt_pedidos IS NOT INITIAL.
-  SELECT kunnr name1 
-    FROM kna1 
-    INTO TABLE lt_clientes
-    FOR ALL ENTRIES IN lt_pedidos
-    WHERE kunnr = lt_pedidos-kunnr.
-ENDIF.
+SELECT kunnr name1 FROM kna1 
+  INTO TABLE lt_clientes
+  FOR ALL ENTRIES IN lt_pedidos
+  WHERE kunnr = lt_pedidos-kunnr.
+              `
+                        }
+                    ],
+                    exercises: []
+                },
+                {
+                    id: 7,
+                    title: "S7: Modularización",
+                    content: `
+### Reutilización de Código
+- **Subrutinas (PERFORM)**: Locales al programa.
+- **Módulos de Función (SE37)**: Globales y reutilizables.
+- **Métodos (OO)**: El estándar moderno.
+          `,
+                    examples: [],
+                    exercises: []
+                },
+                {
+                    id: 8,
+                    title: "S8: Reportes ALV (SALV)",
+                    content: `
+### CL_SALV_TABLE
+Es la clase moderna para mostrar grillas de datos con funciones integradas (filtros, excel).
+          `,
+                    examples: [
+                        {
+                            language: "abap",
+                            code: `
+cl_salv_table=>factory(
+  IMPORTING r_salv_table = lo_alv
+  CHANGING  t_table      = lt_datos ).
+lo_alv->display( ).
               `
                         }
                     ],
@@ -252,34 +229,17 @@ ENDIF.
                 },
                 {
                     id: 9,
-                    title: "S9: Reportes ALV",
+                    title: "W2: Taller Semanal - Reporte Profesional ALV",
                     content: `
-### ABAP List Viewer (ALV)
-Es la grilla estándar de SAP. Permite ordenar, filtrar, exportar a Excel, etc.
+### Objetivo
+Crear un reporte que una Cabecera de Ventas (\`VBAK\`) y Clientes (\`KNA1\`).
 
-#### Opciones:
-1.  **Posición de Funciones (Legacy)**: \`REUSE_ALV_GRID_DISPLAY\`. Fácil pero obsoleta.
-2.  **POO (Moderna)**: \`CL_SALV_TABLE\`. Mucho más limpia y orientada a objetos (Factory pattern).
-            `,
-                    examples: [
-                        {
-                            language: "abap",
-                            code: `
-* Uso de CL_SALV_TABLE
-DATA: lo_alv TYPE REF TO cl_salv_table.
-
-TRY.
-    cl_salv_table=>factory(
-      IMPORTING r_salv_table = lo_alv
-      CHANGING  t_table      = lt_datos ).
-    
-    lo_alv->display( ).
-    
-  CATCH cx_salv_msg.
-ENDTRY.
-                    `
-                        }
-                    ],
+### Tareas
+1. Realizar la consulta usando \`FOR ALL ENTRIES\`.
+2. Modularizar la lógica en una clase local o subrutinas.
+3. Mostrar el resultado usando \`CL_SALV_TABLE\`.
+          `,
+                    examples: [],
                     exercises: []
                 }
             ]
@@ -291,57 +251,46 @@ ENDTRY.
             sessions: [
                 {
                     id: 11,
-                    title: "S11: Batch Input (LSMW / SHDB)",
+                    title: "S11: Batch Input & SHDB",
                     content: `
 ### Concepto
-Simular que un usuario teclea datos en una transacción.
-Usamos la Tx **SHDB** para grabar los pasos y obtener el código.
-
-### Comandos
-- \`BDC_OPEN_GROUP\`: Iniciar sesión.
-- \`BDC_INSERT\`: Insertar transacción.
-- \`CALL TRANSACTION 'VA01' USING lt_bdcdata MODE 'N' UPDATE 'S'.\`
-  - MODE 'N': No mostrar pantallas (background).
-  - MODE 'A': Mostrar todas (debug).
-                `,
+Simular la interacción del usuario en una transacción para cargar datos masivos.
+          `,
                     examples: [],
                     exercises: []
                 },
                 {
                     id: 12,
-                    title: "S12: BAPIs (Business Application Programming Interfaces)",
+                    title: "S12: BAPIs",
                     content: `
-Las BAPIs son métodos RFC estandarizados por SAP que garantizan la integridad de los datos. Son preferibles al Batch Input.
-Se buscan en la Tx **BAPI**.
-
-Siempre requieren un \`COMMIT WORK\` explícito al final si son de escritura.
-                `,
+### Business API
+Funciones estándar para realizar transacciones de negocio asegurando integridad. Requieren \`BAPI_TRANSACTION_COMMIT\`.
+          `,
                     examples: [
                         {
                             language: "abap",
                             code: `
-DATA: ls_header  TYPE bapisdhd1,
-      lt_items   TYPE TABLE OF bapisditm,
-      lt_return  TYPE TABLE OF bapiret2.
-
-ls_header-doc_type = 'TA'.
-ls_header-sales_org = '1000'.
-
 CALL FUNCTION 'BAPI_SALESORDER_CREATEFROMDAT2'
-  EXPORTING
-    order_header_in = ls_header
-  TABLES
-    return          = lt_return
-    order_items_in  = lt_items.
-
-IF line_exists( lt_return[ type = 'E' ] ).
-  ROLLBACK WORK.
-ELSE.
-  CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'.
-ENDIF.
-                        `
+  EXPORTING order_header_in = ls_header
+  TABLES return = lt_return.
+              `
                         }
                     ],
+                    exercises: []
+                },
+                {
+                    id: 13,
+                    title: "W3: Taller Semanal - Carga de Pedidos",
+                    content: `
+### Objetivo
+Implementar una carga de pedidos de venta.
+
+### Tareas
+1. Crear un reporte que tome una lista de pedidos.
+2. Procesar cada uno usando la BAPI de creación de pedidos.
+3. Mostrar un log de errores/éxitos al final.
+          `,
+                    examples: [],
                     exercises: []
                 }
             ]
@@ -353,63 +302,38 @@ ENDIF.
             sessions: [
                 {
                     id: 16,
-                    title: "S16: User Exits & Customer Exits",
+                    title: "S16: User Exits & BAdIs",
                     content: `
-### User Exits (Form Exits)
-Son los más antiguos. Son subrutinas (\`FORM\`) vacías dentro de programas estándar (generalmente en SD).
-- **Ejemplo**: Programa \`SAPMV45A\`, Include \`MV45AFZZ\`.
-- **Riesgo**: Requieren clave de acceso (en versiones viejas) y múltiples desarrolladores pueden colisionar si editan el mismo include.
-
-### Customer Exits (Function Exits)
-Gestionados en Tx **SMOD** (Definición) y **CMOD** (Implementación).
-Son Módulos de Función con nombres como \`EXIT_SAPMV45A_002\`.
-Dentro tienen un Z-Include (ej. \`ZX...\`) donde pones tu código.
-                `,
+### Ampliaciones
+Puntos donde podemos insertar código en el estándar sin modificar el core de SAP.
+- **BAdI**: Orientadas a Objetos (SE18/SE19).
+- **User Exits**: Subrutinas en includes específicos.
+          `,
                     examples: [],
                     exercises: []
                 },
                 {
                     id: 17,
-                    title: "S17: BAdIs (Business Add-Ins)",
+                    title: "S17: Enhancement Framework",
                     content: `
-La evolución orientada a objetos de las ampliaciones.
-- **Classic BAdIs**: Se basan en clases ABAP.
-- **New BAdIs (Kernel)**: Más rápidas, almacenadas en el Kernel. Tx **SE18** (Definición) y **SE19** (Implementación).
-- Soportan múltiples implementaciones (a diferencia de los User Exits).
-
-### ¿Cómo encontrar una BAdI?
-1.  Poner un breakpoint en el método \`cl_exithandler=>get_instance\`.
-2.  Ejecutar la transacción estándar.
-3.  Cada vez que pare, mirar la variable \`exit_name\`.
-                `,
-                    examples: [
-                        {
-                            language: "abap",
-                            code: `
-* En el método GET_INSTANCE:
-CASE exit_name.
-  WHEN 'BADI_MATERIAL_CHECK'.
-    " Aquí es donde SAP busca la implementación
-ENDCASE.
-                        `
-                        }
-                    ],
+### Implicit & Explicit Enhancements
+Permiten "inyectar" código al inicio o final de casi cualquier función o método estándar.
+          `,
+                    examples: [],
                     exercises: []
                 },
                 {
                     id: 18,
-                    title: "S18: Enhancement Framework",
+                    title: "W4: Taller Final - Validación de Materiales",
                     content: `
-Es la tecnología más potente y moderna. Permite modificar código estándar *sin* modificar el objeto original (técnicamente).
+### Objetivo
+Implementar una regla de negocio en una transacción estándar.
 
-### Tipos:
-1.  **Implicit Enhancement Points**: Puntos predefinidos por SAP al inicio y final de CADA subrutina, función o método. ¡Están en todas partes!
-    - *Cómo verlos*: En SE38 -> Editar -> Menu: Edit -> Enhancement Operations -> Show Implicit Enhancement Options.
-2.  **Explicit Enhancement Points**: Puntos creados manualmente por SAP en su código (\`ENHANCEMENT-POINT\`).
-
-### BTEs (Business Transaction Events)
-Específicos de Finanzas (FI). Usan la transacción **FIBF**. Funcionan como un patrón Publish/Subscribe.
-                `,
+### Tareas
+1. Buscar una BAdI en la transacción \`MM01\`.
+2. Implementar una validación que impida guardar si falta el peso del material.
+3. Probar la validación y capturar el mensaje de error.
+          `,
                     examples: [],
                     exercises: []
                 }
