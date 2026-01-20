@@ -1,5 +1,30 @@
+export interface Example {
+    language: string;
+    code: string;
+}
 
-export const courseData = {
+export interface Session {
+    id: number;
+    title: string;
+    content: string;
+    examples?: Example[];
+    exercises?: string[];
+}
+
+export interface Week {
+    id: number;
+    title: string;
+    description?: string;
+    sessions: Session[];
+}
+
+export interface CourseData {
+    title: string;
+    description: string;
+    weeks: Week[];
+}
+
+export const courseData: CourseData = {
     title: "Master en SAP ABAP - De Cero a Experto",
     description: "Curso intensivo de 4 semanas para dominar el desarrollo en SAP ECC.",
     weeks: [
