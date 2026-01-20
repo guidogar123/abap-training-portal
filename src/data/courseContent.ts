@@ -90,38 +90,61 @@ El DDIC (SE11) es el corazón de SAP. Todos los datos se definen aquí.
                 },
                 {
                     id: 3,
-                    title: "S3: Diccionario de Datos II",
+                    title: "S3: Diccionario de Datos II (Objetos Avanzados)",
                     content: `
-### Estructuras vs Tablas
-- **Estructura**: Es un tipo de dato complejo que existe solo en tiempo de ejecución (no guarda datos en BD). Se usa para definir variables en programas o parámetros de interfaces.
-- **Vistas de Base de Datos**: Joins predefinidos entre tablas para facilitar lecturas.
+### Objetos Avanzados del DDIC
+Más allá de las tablas, el DDIC ofrece herramientas para la integridad y la experiencia de usuario.
 
-### Tablas Internas en ABAP
-Son arrays en memoria. Es vital entender los 3 tipos:
-1.  **STANDARD TABLE**: Búsqueda lineal (vía índice). Rápida inserción.
-2.  **SORTED TABLE**: Siempre ordenada por clave. Búsqueda binaria automática.
-3.  **HASHED TABLE**: Búsqueda por algoritmo hash (O(1)). Ideal para grandes volúmenes y lecturas por clave única.
+#### 1. Ayudas de Búsqueda (Search Helps - F4)
+Permiten al usuario buscar valores válidos para un campo.
+- **Elementary**: Una sola fuente de datos (Tabla o Vista).
+- **Collective**: Grupo de ayudas elementales (permite buscar por diferentes criterios).
+- **Tx**: SE11 -> Search Help. Para activarla en un campo, se asigna al elemento de datos o al campo de la tabla.
+
+#### 2. Vistas (Views)
+Son tablas virtuales que combinan datos de múltiples tablas físicas.
+- **Database View**: Inner Join puro para lectura rápida.
+- **Maintenance View**: Permite crear una interfaz de edición para varias tablas relacionadas (Joins externos).
+- **Help View**: Específica para ayudas de búsqueda.
+
+#### 3. Objetos de Bloqueo (Lock Objects)
+Para evitar que dos usuarios editen el mismo registro al mismo tiempo.
+- **Nombre**: Siempre empieza con 'E' (ej. \`EZ_PEDIDOS\`).
+- **Funcionamiento**: Al activarse, SAP genera dos funciones automáticamente:
+    - \`ENQUEUE_EZ_PEDIDOS\`: Bloquear.
+    - \`DEQUEUE_EZ_PEDIDOS\`: Desbloquear.
+
+#### 4. Generador de Mantenimiento de Tablas (TMG)
+Permite que usuarios finales editen tablas Z vía transacción **SM30**.
+- **Acceso**: SE11 -> Utilities -> Table Maintenance Generator.
+- Requiere un Grupo de Funciones (\`Function Group\`) y asignar números de pantalla (\`Screens\`).
+
+### Estructuras vs Tablas
+- **Estructura**: Tipo complejo en memoria (no persiste datos).
+- **Tablas Internas**: Arrays en memoria (Standard, Sorted, Hashed).
             `,
                     examples: [
                         {
                             language: "abap",
                             code: `
-* Definición de tipos
-TYPES: BEGIN OF ty_pedido,
-         vbeln TYPE vbeln_va,
-         erdat TYPE erdat,
-       END OF ty_pedido.
+* Ejemplo de uso de Objeto de Bloqueo
+CALL FUNCTION 'ENQUEUE_EZ_STUDENTS'
+  EXPORTING id_student = '0001'
+  EXCEPTIONS foreign_lock = 1.
 
-* Tabla Interna Estándar
-DATA: lt_pedidos TYPE STANDARD TABLE OF ty_pedido.
-
-* Tabla Hashed (Lectura ultra rápida)
-DATA: lt_kna1 TYPE HASHED TABLE OF kna1 
-      WITH UNIQUE KEY kunnr.
+IF sy-subrc = 0.
+  " Proceder con el UPDATE
+  CALL FUNCTION 'DEQUEUE_EZ_STUDENTS'
+    EXPORTING id_student = '0001'.
+ENDIF.
                     `
                         }
                     ],
-                    exercises: []
+                    exercises: [
+                        "Crear una Ayuda de Búsqueda para el campo ID_STUDENT.",
+                        "Generar el Mantenimiento de Tabla (TMG) para ZSTUDENTS y probarlo en la SM30.",
+                        "Crear una Database View que una ZSTUDENTS con una tabla de Carreras (ej. ZCARRERAS)."
+                    ]
                 },
                 {
                     id: 4,
