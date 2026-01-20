@@ -125,41 +125,86 @@ DATA: lt_kna1 TYPE HASHED TABLE OF kna1
                 },
                 {
                     id: 4,
-                    title: "S4: Sintaxis ABAP Básica",
+                    title: "S4: Sintaxis y Programación Orientada a Eventos",
                     content: `
-### Declaración de Datos
-ABAP es tipado. Se usa \`DATA\` para variables y \`CONSTANTS\` para constantes.
-Tipos comunes: \`i\` (entero), \`c\` (caracter), \`n\` (numérico texto), \`d\` (fecha), \`p\` (packed decimals/moneda).
+### Sintaxis ABAP Básica
+ABAP no distingue entre mayúsculas y minúsculas (excepto en literales de texto). Cada sentencia debe terminar en un punto (\`.\`).
 
-### Control de Flujo
-- **IF / ELSEIF / ELSE**: Condicional estándar.
-- **CASE / WHEN**: Switch case.
-- **LOOP AT ... INTO ...**: Iterar tablas internas.
-- **DO n TIMES**: Bucles simples.
+**Encadenamiento de Sentencias (Chain Statements)**:
+Se usa el dos puntos (\`:\`) para agrupar comandos que comparten el inicio.
+\`\`\`abap
+WRITE: 'Hola', 'Mundo', 'SAP'.
+\`\`\`
+
+**Convenciones de Nomenclatura Recomendadas**:
+- \`lv_...\`: Variable local.
+- \`gv_...\`: Variable global.
+- \`lt_...\`: Tabla interna local.
+- \`ls_...\`: Estructura (Line) local.
+
+### Programación Orientada a Eventos (Reporting)
+A diferencia de otros lenguajes lineales, los reportes ABAP se ejecutan según el ciclo de vida del entorno SAP, activando eventos específicos:
+
+1.  **LOAD-OF-PROGRAM**: Se activa al cargar el programa en memoria.
+2.  **INITIALIZATION**: Momento ideal para setear valores por defecto en la pantalla de selección.
+3.  **AT SELECTION-SCREEN**: Validación de los datos ingresados por el usuario. Aquí se disparan los mensajes de error.
+4.  **START-OF-SELECTION**: El evento principal. Aquí reside la lógica de negocio (consultas a base de datos).
+5.  **END-OF-SELECTION**: Se ejecuta después de la lógica principal. Ideal para mostrar resultados o llamar al ALV.
             `,
                     examples: [
                         {
                             language: "abap",
                             code: `
-DATA: lv_contador TYPE i VALUE 0,
-      lv_fecha    TYPE d.
+REPORT z_ejemplo_eventos.
 
-lv_fecha = sy-datum. "Fecha del sistema
+*--------------------------------------------------------------------*
+* DECLARACIÓN DE DATOS
+*--------------------------------------------------------------------*
+TABLES: mara.
 
-IF lv_fecha+6(2) = '01'. "Primer día del mes
-  WRITE: 'Inicio de mes'.
-ELSE.
-  lv_contador = lv_contador + 1.
-ENDIF.
+SELECT-OPTIONS: s_matnr FOR mara-matnr. " Pantalla de selección
+PARAMETERS: p_check AS CHECKBOX DEFAULT 'X'.
 
-CASE lv_contador.
-  WHEN 1. WRITE 'Uno'.
-  WHEN OTHERS. WRITE 'Otro'.
-ENDCASE.
-                    `
+DATA: lt_materiales TYPE TABLE OF mara,
+      ls_material   TYPE mara.
+
+*--------------------------------------------------------------------*
+* EVENTOS
+*--------------------------------------------------------------------*
+
+INITIALIZATION.
+  " Este código corre ANTES de que el usuario vea la pantalla
+  APPEND VALUE #( sign = 'I' option = 'BT' low = '1' high = '100' ) TO s_matnr.
+
+AT SELECTION-SCREEN.
+  " Validación de campos
+  IF s_matnr[] IS INITIAL AND p_check = 'X'.
+    MESSAGE 'Favor de ingresar al menos un material' TYPE 'E'.
+  ENDIF.
+
+START-OF-SELECTION.
+  " Lógica principal: Lectura de base de datos
+  SELECT * FROM mara 
+    INTO TABLE lt_materiales
+    WHERE matnr IN s_matnr.
+
+END-OF-SELECTION.
+  " Visualización de resultados
+  IF lt_materiales IS NOT INITIAL.
+    LOOP AT lt_materiales INTO ls_material.
+      WRITE: / ls_material-matnr, ls_material-matart.
+    ENDLOOP.
+  ELSE.
+    WRITE: 'No se encontraron resultados.'.
+  ENDIF.
+                            `
                         }
                     ],
-                    exercises: []
+                    exercises: [
+                        "Crear un reporte que use INITIALIZATION para poner la fecha de hoy en un parámetro.",
+                        "En AT SELECTION-SCREEN, validar que un campo de usuario no esté vacío.",
+                        "Implementar START-OF-SELECTION para realizar una suma y END-OF-SELECTION para mostrarla."
+                    ]
                 }
             ] // Fin sesiones semana 1
         },
