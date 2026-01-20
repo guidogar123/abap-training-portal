@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { Transpiler } from '@abaplint/transpiler';
 import { ABAP } from '@abaplint/runtime';
+import { MemoryFile, Registry } from '@abaplint/core';
 import { Play, RotateCcw, Terminal, Code2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,13 +37,30 @@ export const AbapPlayground: React.FC = () => {
         setOutput([]);
 
         try {
+            const file = new MemoryFile('zplayground.prog.abap', code);
+            const reg = new Registry().addFile(file).parse();
+
             // @ts-ignore
             const transpiler = new Transpiler();
             // @ts-ignore
-            const js = transpiler.run(code);
+            const outputFiles: any = await transpiler.run(reg);
+
+            // Find the generated JS for our program
+            // The transpiler might return an array or an object with objects depending on version
+            const files = Array.isArray(outputFiles) ? outputFiles : (outputFiles.objects || []);
+            const jsFile = files.find((f: any) => {
+                const name = f.getFilename ? f.getFilename() : (f.chunk ? f.chunk.getFilename() : '');
+                return name.includes('zplayground');
+            });
+
+            if (!jsFile) {
+                throw new Error("No se pudo generar el JavaScript para este código.");
+            }
+
+            const js = jsFile.getContents ? jsFile.getContents() : jsFile.chunk.getContents();
 
             // Actual working implementation for abaplint runtime:
-            const execute = new Function("runtime", "code", `
+            const execute = new Function("runtime", "jsCode", `
                 const abap = new runtime.ABAP();
                 // Overriding the internal console/write mechanism of abaplint runtime
                 let out = "";
@@ -50,7 +68,7 @@ export const AbapPlayground: React.FC = () => {
                 abap.write = (t) => { out += (t || ""); };
                 
                 try {
-                    \${js}
+                    \${jsCode}
                     return out;
                 } catch (e) {
                     return "RUNTIME ERROR: " + e.message;

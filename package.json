@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@abaplint/core": "^2.115.16",
     "@abaplint/runtime": "^2.12.25",
     "@abaplint/transpiler": "^2.12.25",
     "@monaco-editor/react": "^4.7.0",
