@@ -6,9 +6,10 @@ import { Copy, Check } from 'lucide-react';
 interface CodeBlockProps {
     language?: string;
     code: string;
+    onTryInPlayground?: (code: string) => void;
 }
 
-const CodeBlock = ({ language = 'abap', code }: CodeBlockProps) => {
+const CodeBlock = ({ language = 'abap', code, onTryInPlayground }: CodeBlockProps) => {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
@@ -23,9 +24,19 @@ const CodeBlock = ({ language = 'abap', code }: CodeBlockProps) => {
                 <button
                     onClick={handleCopy}
                     className="p-1.5 rounded-md bg-slate-700/80 text-slate-200 hover:bg-slate-600 transition-colors"
+                    title="Copiar código"
                 >
                     {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
                 </button>
+                {onTryInPlayground && (
+                    <button
+                        onClick={() => onTryInPlayground(code)}
+                        className="p-1.5 rounded-md bg-blue-600/80 text-white hover:bg-blue-500 transition-colors ml-1"
+                        title="Probar en Playground"
+                    >
+                        <Play size={16} fill="currentColor" />
+                    </button>
+                )}
             </div>
             <SyntaxHighlighter
                 language={language}

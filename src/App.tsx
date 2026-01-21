@@ -9,6 +9,13 @@ function App() {
     const [viewMode, setViewMode] = useState<'course' | 'playground'>('course');
     const [currentSession, setCurrentSession] = useState<Session>(courseData.weeks[0].sessions[0]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [playgroundCode, setPlaygroundCode] = useState<string>('');
+
+    const handleTryInPlayground = (code: string) => {
+        setPlaygroundCode(code);
+        setViewMode('playground');
+        setSidebarOpen(false);
+    };
 
     return (
         <div className="flex h-screen overflow-hidden bg-[var(--bg-color)] text-[var(--text-primary)]">
@@ -48,9 +55,12 @@ function App() {
                 <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-blue-900/10 to-transparent pointer-events-none" />
                 <div className="relative z-0">
                     {viewMode === 'course' ? (
-                        <LessonContent session={currentSession} />
+                        <LessonContent
+                            session={currentSession}
+                            onTryInPlayground={handleTryInPlayground}
+                        />
                     ) : (
-                        <AbapPlayground />
+                        <AbapPlayground initialCode={playgroundCode} />
                     )}
                 </div>
             </main>

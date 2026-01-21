@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronRight, ChevronDown, BookOpen, Hexagon, PlayCircle } from 'lucide-react';
+import { ChevronRight, ChevronDown, BookOpen, Hexagon, Play } from 'lucide-react';
 import { Week, Session } from '../data/courseContent';
 
 interface SidebarProps {
@@ -44,18 +44,21 @@ const Sidebar = ({ weeks, currentSession, viewMode, onSelectSession, onSelectPla
 
             <div className="overflow-y-auto h-[calc(100vh-88px)] p-4 space-y-4">
                 {/* Herramientas / Tools */}
-                <div className="space-y-1">
-                    <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Herramientas</p>
+                <div className="space-y-1 mb-6">
+                    <p className="px-3 text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <span className="w-1 h-1 rounded-full bg-blue-400"></span>
+                        Herramientas
+                    </p>
                     <button
-                        onClick={onSelectPlayground}
+                        onClick={() => onSelectPlayground && onSelectPlayground()}
                         className={`
-                            w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all border
+                            w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all border
                             ${viewMode === 'playground'
-                                ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/40'
-                                : 'bg-slate-800/50 border-white/5 text-slate-300 hover:bg-white/5 hover:text-white'}
+                                ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/50 scale-[1.02]'
+                                : 'bg-slate-800/80 border-white/5 text-slate-200 hover:bg-slate-700 hover:text-white shadow-md'}
                         `}
                     >
-                        <PlayCircle size={18} className={viewMode === 'playground' ? 'text-white' : 'text-blue-400'} />
+                        <Play size={16} fill={viewMode === 'playground' ? 'currentColor' : 'none'} className={viewMode === 'playground' ? 'text-white' : 'text-blue-400'} />
                         ABAP Playground
                     </button>
                 </div>

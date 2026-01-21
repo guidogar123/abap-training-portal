@@ -22,11 +22,22 @@ LOOP AT lt_data INTO lv_text.
   WRITE / |Tabla: \{ lv_text \}|.
 ENDLOOP.`;
 
-export const AbapPlayground: React.FC = () => {
+interface AbapPlaygroundProps {
+    initialCode?: string;
+}
+
+export function AbapPlayground({ initialCode }: AbapPlaygroundProps) {
     const [code, setCode] = useState(DEFAULT_CODE);
     const [output, setOutput] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [isRunning, setIsRunning] = useState(false);
+
+    // Update code if initialCode changes
+    React.useEffect(() => {
+        if (initialCode) {
+            setCode(initialCode);
+        }
+    }, [initialCode]);
 
     const runCode = async () => {
         setIsRunning(true);

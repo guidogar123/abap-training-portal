@@ -52,9 +52,10 @@ const MarkdownLite = ({ content }: { content: string }) => {
 
 interface LessonContentProps {
     session: Session;
+    onTryInPlayground?: (code: string) => void;
 }
 
-const LessonContent = ({ session }: LessonContentProps) => {
+const LessonContent = ({ session, onTryInPlayground }: LessonContentProps) => {
     if (!session) return <div className="p-10 text-center text-slate-500">Selecciona una lección para comenzar</div>;
 
     return (
@@ -82,7 +83,11 @@ const LessonContent = ({ session }: LessonContentProps) => {
                                 <span>ABAP Editor</span>
                                 <span>Ejemplo {idx + 1}</span>
                             </div>
-                            <CodeBlock code={ex.code} language={ex.language} />
+                            <CodeBlock
+                                code={ex.code}
+                                language={ex.language}
+                                onTryInPlayground={onTryInPlayground}
+                            />
                         </div>
                     ))}
                 </div>
