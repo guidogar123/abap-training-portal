@@ -5,19 +5,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: './',
-  optimizeDeps: {
-    exclude: ['@abaplint/transpiler', '@abaplint/runtime']
+  define: {
+    'process.env': {},
+    'global': 'window',
   },
   build: {
     commonjsOptions: {
       transformMixedEsModules: true,
-    },
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          abaplint: ['@abaplint/transpiler', '@abaplint/runtime']
-        }
-      }
     }
   }
 })
