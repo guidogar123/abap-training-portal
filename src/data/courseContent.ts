@@ -199,24 +199,67 @@ Integrar DDIC y Sintaxis en un mini-proyecto.
                     id: 6,
                     title: "S6: Open SQL Avanzado",
                     content: `
+### Open SQL vs SQL Normal en SAP
+
+#### Comparación de Características
+
+| Característica | Open SQL (ABAP SQL) | SQL Normal (Native SQL) |
+|----------------|---------------------|-------------------------|
+| **Dependencia** | Independiente. El mismo código corre en HANA o SQL Server. | Dependiente. El código se escribe para una DB específica. |
+| **Sintaxis** | Estandarizada por SAP. | Cambia según el fabricante (PL/SQL, T-SQL). |
+| **Mandante (MANDT)** | Se gestiona automáticamente (filtra por tu cliente). | Debes filtrarlo manualmente en cada consulta. |
+| **Validación** | El compilador de ABAP detecta errores antes de ejecutar. | Los errores solo aparecen al ejecutar el programa. |
+
 ### SELECT & Performance
+
 **Reglas de Oro:**
-1. Filtrar por Clave/Índices.
-2. NUNCA SELECT dentro de un LOOP.
-3. Usar \`FOR ALL ENTRIES\` para combinar tablas.
+1. **Filtrar por Clave/Índices**: Siempre que sea posible, usa campos clave o indexados en la cláusula WHERE.
+2. **NUNCA SELECT dentro de un LOOP**: Esto genera múltiples accesos a la base de datos. Usa \`FOR ALL ENTRIES\` en su lugar.
+3. **Usar \`FOR ALL ENTRIES\`**: Para combinar datos de múltiples tablas de forma eficiente.
+4. **Proyección de campos**: Solo selecciona los campos que necesitas, evita \`SELECT *\`.
+5. **Validar tabla interna**: Antes de usar \`FOR ALL ENTRIES\`, verifica que la tabla interna no esté vacía.
+
+### Ventajas de Open SQL
+
+- ✅ **Portabilidad**: Tu código funciona independientemente de la base de datos subyacente
+- ✅ **Seguridad**: Gestión automática del mandante (MANDT)
+- ✅ **Validación temprana**: Errores detectados en tiempo de compilación
+- ✅ **Mantenibilidad**: Sintaxis estándar y consistente
           `,
                     examples: [
                         {
                             language: "abap",
                             code: `
-SELECT kunnr name1 FROM kna1 
+* ❌ MAL - SELECT dentro de LOOP (Muy lento)
+LOOP AT lt_pedidos INTO ls_pedido.
+  SELECT SINGLE name1 FROM kna1 
+    INTO ls_pedido-nombre
+    WHERE kunnr = ls_pedido-kunnr.
+ENDLOOP.
+
+* ✅ BIEN - FOR ALL ENTRIES (Eficiente)
+SELECT kunnr name1 
+  FROM kna1 
   INTO TABLE lt_clientes
   FOR ALL ENTRIES IN lt_pedidos
   WHERE kunnr = lt_pedidos-kunnr.
+
+* ✅ MEJOR - Con validación de tabla vacía
+IF lt_pedidos IS NOT INITIAL.
+  SELECT kunnr name1 
+    FROM kna1 
+    INTO TABLE lt_clientes
+    FOR ALL ENTRIES IN lt_pedidos
+    WHERE kunnr = lt_pedidos-kunnr.
+ENDIF.
               `
                         }
                     ],
-                    exercises: []
+                    exercises: [
+                        "Refactorizar un código que tenga SELECT dentro de LOOP para usar FOR ALL ENTRIES.",
+                        "Crear una consulta que combine datos de VBAK (Cabecera de Ventas) y KNA1 (Maestro de Clientes) usando Open SQL.",
+                        "Comparar el tiempo de ejecución entre SELECT en LOOP vs FOR ALL ENTRIES usando SE30 (Runtime Analysis)."
+                    ]
                 },
                 {
                     id: 7,
