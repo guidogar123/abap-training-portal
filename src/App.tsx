@@ -1,11 +1,15 @@
 import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import LessonContent from './components/LessonContent';
 import { courseData, Session } from './data/courseContent';
 import { Menu, X } from 'lucide-react';
 import { AbapPlayground } from './components/AbapPlayground';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { Login } from './pages/Login';
 
-function App() {
+function ABAPPortal() {
     const [viewMode, setViewMode] = useState<'course' | 'playground'>('course');
     const [currentSession, setCurrentSession] = useState<Session>(courseData.weeks[0].sessions[0]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -65,6 +69,24 @@ function App() {
                 </div>
             </main>
         </div>
+    );
+}
+
+function App() {
+    return (
+        <AuthProvider>
+            <Router>
+                <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/" element={
+                        <ProtectedRoute>
+                            <ABAPPortal />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </Router>
+        </AuthProvider>
     );
 }
 

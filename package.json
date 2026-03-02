@@ -13,6 +13,8 @@
     "@abaplint/core": "^2.115.16",
     "@abaplint/runtime": "^2.12.25",
     "@abaplint/transpiler": "^2.12.25",
+    "@azure/msal-browser": "^5.4.0",
+    "@azure/msal-react": "^5.0.6",
     "@monaco-editor/react": "^4.7.0",
     "@tailwindcss/postcss": "^4.1.18",
     "autoprefixer": "^10.4.23",
