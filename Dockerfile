@@ -20,6 +20,12 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Copiar configuración de Nginx para SPA
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Validar configuración de Nginx
+RUN nginx -t
+
 EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
