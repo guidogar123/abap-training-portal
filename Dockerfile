@@ -1,38 +1,26 @@
-# Stage 1: Build
+# --- Build Stage ---
 FROM node:20-alpine AS build
-
 WORKDIR /app
 
-# Argumentos de construcción para variables VITE_
-ARG VITE_MICROSOFT_CLIENT_ID
-ARG VITE_MICROSOFT_TENANT_ID
+# Argumentos con valores por defecto (tomados del .env actual)
+ARG VITE_MICROSOFT_CLIENT_ID=3405f9b5-f33d-4153-8897-f01bcc592ad1
+ARG VITE_MICROSOFT_TENANT_ID=08952c25-7320-4ffb-8f36-899990c950ad
 
-# Variables de entorno para el proceso de build
 ENV VITE_MICROSOFT_CLIENT_ID=$VITE_MICROSOFT_CLIENT_ID
 ENV VITE_MICROSOFT_TENANT_ID=$VITE_MICROSOFT_TENANT_ID
 
-# Instalación de dependencias
+# Instalación estándar
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-# Compilación de la aplicación
+# Build
 COPY . .
 RUN npm run build
 
-# --- Stage 2: Production ---
+# --- Production Stage ---
 FROM nginx:stable-alpine
-
-# Eliminar configuración por defecto de Nginx
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Copiar nuestra configuración optimizada
-COPY nginx.conf /etc/nginx/conf.d/portal.conf
-
-# Copiar los archivos estáticos desde la etapa de build
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# Asegurar permisos correctos
-RUN chown -R nginx:nginx /usr/share/nginx/html && chmod -R 755 /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
