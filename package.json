@@ -2,12 +2,15 @@
   "name": "abap-training-portal",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://guidogar123.github.io/abap-training-portal",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@abaplint/core": "^2.115.16",
