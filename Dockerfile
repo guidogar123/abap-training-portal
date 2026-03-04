@@ -20,8 +20,8 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Copiar configuración de Nginx para SPA
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Redirigir logs de nginx a stdout/stderr (estándar en imagen oficial pero aseguramos)
-RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log
+# Validar configuración
+RUN nginx -t
 
 EXPOSE 80
 
